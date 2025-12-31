@@ -1,0 +1,27 @@
+=== book4.txt - PERFECT A-Z SORT ===
+Total words: 48703
+
+a[5789]: a a a a a a a a a a a a a a a a a a a a a a a a a 
+b[1979]: b b b b b babbled baby baby baby back back back back back back back back back back back back back back back back 
+c[1796]: c cab cabinets cabs cabs caddy cadet cahoots cake cake cakes cakes california call call call call call call call call call call call call 
+d[1666]: d da daddy daddy daddy dai dai daisy daisy daisy daisy daisy daisy daisy daisy daisy daisy daisy daisy daisy daisy daisy daisy daisy daisy 
+e[1014]: each each each each each each each each each each each each each each each each each each each each each each each each each 
+f[1749]: f fabric facade face face face face face face face face face face face face face face face face face face face face face face 
+g[1486]: g g g gads gads gamble gambler game game game game games gaod gaod gaod gaod gap garage garage garage garage garage garage garage garage 
+h[3774]: haag habit habit habit had had had had had had had had had had had had had had had had had had had had had 
+i[3772]: i i i i i i i i i i i i i i i i i i i i i i i i i 
+j[288]: j j j j j j jackson jail jail jailor james james james james james james janitor janitors jauntily jauntily jauntiness jaunty jaunty jay jay 
+k[286]: kaiser kant kapiolani katspaugh katspaugh kaye kaye kaye keenly keenly keenly keep keep keep keep keep keep keep keep keep keep keep keeping keeping keeping 
+l[1367]: l labyrinth lacing ladder laden laden ladies ladies ladies ladies lady lady lady lady lady lady lady lady laid lake lake lake lake lamp lamplight 
+m[2093]: machine machine machinegun machinegun machines machines mad mad mad mad mad mad madame madame madame madame made made made made made made made made made 
+n[888]: n n nail name name name name name name name name name name name name name name name name name name name name name name 
+o[2841]: o o o o o o oak oars object object object object object object object objected objected objected objected objected objected objects objects objects obligations 
+p[1084]: p p pack package packed packing page pages pages pages paid paid pain paint painted painting painting paintless pair pair pair pair pair pair pair 
+q[79]: quadthe quality quality quality quality quality quality quality quality quality quality quality quantity quart quarter quarter quarter quarter quartet quartets quavering queens queensboro question question 
+r[885]: r r race race race race raced raced raced races racket rackrent racy racy radiant radiant radiant radiantly radiated raft rag ragged ragged ragged rail 
+s[3540]: s s s sacredness sad sad sad sad sad sad sad saddening sadness sadness sadshe safe safe safe safer sagely said said said said said 
+t[6946]: t t t t t t t table table table table table table table table table table table table table table table table table table 
+u[587]: ulster ultimate ulysses umbrella unable unadaptable unaffected unashamed unbelief unbelievable unbroken unbroken uncertain uncertain uncertain uncertainly uncertainty uncivilized uncles uncomfortably uncomfortably uncommunicable uncontrollable unconvincingly undefined 
+v[270]: vacant vacation vacuous vague vague vague vague vague vaguely vaguely vaguely vaguely vain valley valley valley valour value valued vanished vanished vanished vanished vanished vanished 
+w[3694]: w w wad wafer wag wagon wagon wagon wagon wail wail wailed wailing wait wait wait wait wait wait wait wait wait wait wait wait 
+y[830]: yacht yacht yacht yacht yacht yachting yachting yachting yale yale yale yale yard yard yard yard yard yards yards yards yards yawned yawned yawned yawned 

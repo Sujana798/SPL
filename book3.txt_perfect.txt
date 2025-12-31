@@ -1,0 +1,28 @@
+=== book3.txt - PERFECT A-Z SORT ===
+Total words: 21165
+
+a[2018]: a a a a a a a a a a a a a a a a a a a a a a a a a 
+b[860]: b b b babies baby baby baby baby baby baby baby baby baby baby back back back back back back back back back back back 
+c[1574]: c c c c cab cab cab cab cage cage caged caged caged cain california california california california california calipers call call call call call 
+d[827]: da daddy damages damn dance dance dancing dancing dancing danger danger dark dark dark dark dark dark dark dark darkened darkined dash dashboard daughter david 
+e[323]: e e e each each each each each each early eat eat eat eat eating eating eating eating eating eating ecause edge edge edge eerily 
+f[1350]: f face face face face face face face face face face face face facing fade faint faintly faintly faintly fair fair fairly fairly fall falls 
+g[639]: g game game game game game game game game garage garage garage garage garage garage garage garage garage garage garage garage garage garage garage garage 
+h[1365]: h ha had had had had had had had had had had had had had had had had had hadda hair hair hair hair hair 
+i[1447]: i i i i i i i i i i i i i i i i i i i i i i i i i 
+j[88]: jack jack jack jacket jacket jacket jacket jacket jacks jail jail jail jail jail jailhouse james jammed jd jeans jeans jim job job joe jogging 
+k[306]: katz katz katz katz katz katz katz katz katz katz katz katz katz katz katz katz katz katz katz katz katz katz katz katz katz 
+l[475]: l la la la la la labor lacerations ladder ladder ladder ladder ladder ladder ladder ladder ladder lake lake lamely landed landed landing lands lane 
+m[609]: m m m maam maam machinist made made made made made made made made madge madge madge madge madge madge madge madge madge madge madge 
+n[654]: n n n n na naked naked naked name name nap napping nattily nd nd nd near near near near near near near near near 
+o[997]: o o oaks oaks oaks oaks oaks oaks oaks oaks oaks oaks oaks oaks oaks oaks oaks oaks oaks oaks oaks oaks oaks oaks oaks 
+p[671]: p p p p p p p p p p p p p p p p p p p p p p p p p 
+q[20]: qa quart question question questions questions quickly quickly quiet quietly quietly quietly quietly quiets quiets quilty quit quite quits quizzical 
+r[424]: races rack rack rack rack railroad raincoat raining raises raises raises raises raises raking ran ran random rank rank rank raod raps rather rather rattled 
+s[1566]: s s s s sa sa sackett sackett sackett sackett sackett sackett sackett sackett sackett sackett sackett sackett sackett sackett sackett sackett sackett sackett sackett 
+t[3117]: t t t t t table table table table table table table table table table table table table table table table table table table table 
+u[256]: u uh uh uh uh uh uh uh uh uh uh uh uhcould um um unattractive unblinking unbuttons unchanged uncomfortacle uncomprehending uncomprehending unconscious unconsciously under 
+v[56]: v v v vacation vanity various veers vegetable vegetable vehicle vehicles very very very very very very very very very very very very very very 
+w[960]: w w waal waddya waht wailing wait wait wait wait wait wait wait wait waiting waiting waiting waiting waiting wake wake wake wake wake wake 
+x[1]: x 
+y[562]: y y ya ya yaa yard yards yeah yeah yeah yeah yeah yeah yeah yeah yeah yeah yeah yeah yeah yeah yeah yeah yeah yeah 

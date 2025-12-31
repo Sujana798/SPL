@@ -1,0 +1,29 @@
+=== book1.txt - PERFECT A-Z SORT ===
+Total words: 18676
+
+a[2002]: a a a a a a a a a a a a a a a a a a a a a a a a a 
+b[1007]: babies babies babushka baby baby baby baby baby baby baby baby baby baby baby baby baby baby baby baby baby baby baby baby baby babygrabber 
+c[725]: c cadillac cadillac cadillac cage cake cake call call call call call call call called called called called calling calls calls calls came came came 
+d[611]: daddy daddys dagoberto dalia damp damp dampness dampness dance dance dance dance dance dance dance dance dance dance dance dance dance dance dance dance danced 
+e[337]: e e each each each each each each each each each each each each ear ear earl earl earl earl earl earl earl earl earl 
+f[544]: face face face face face face face face face face face face face face face faces factory faint fall fall fall fallen falling falling falling 
+g[441]: gallons game game game game game game games garage garage garbage garbage garden garden garden garden garden garden garden garden garden garden garden garden garden 
+h[1026]: had had had had had had had had had had had had had had had had had had had had had had had had had 
+i[1282]: i i i i i i i i i i i i i i i i i i i i i i i i i 
+j[105]: jaws jealous jealousy jean jelly jelly jesus jingling joan joan job job job job job job job jobpapa jobs jobs joe joe joey join joke 
+k[213]: keeler keeler keeler keeler keep keep keep keep keep keep keep keep keep keep keep keep keep keep keep keep keep keep keeping keeping keeping 
+l[814]: la la ladies ladies ladies ladies ladies lady lady lady lady lady lady lady lady ladys laid lala lala lala lala lamppost landlord landlord landlord 
+m[851]: ma ma mad mad mad madame madame made made made made made made made made made made made made made made made made made made 
+n[454]: nacho nacho nacho nacho nailed naked name name name name name name name name name name name name name name name name name name name 
+o[929]: oatmeal oatmeal obeying obeys obvious odd of of of of of of of of of of of of of of of of of of of 
+p[398]: pack pahay paid paint paint paint paint painted painted painted paints paints pair pair pair pair pale pale pale pale pale pale pale pale pale 
+q[21]: quarters queen queen queen queen questions quick quick quick quicker quiet quiet quiet quiet quiet quit quit quit quite quite quite 
+r[342]: rabbits rachel rachel rachel rachel rachel rachel rachel rachel rachel rachel rachel rachel rachel rachel rachel rachel rachel rachel rachel rachel rachel rachel rachel rachel 
+s[1746]: s sack sack sad sad sad sad sad sad sad sad sad sad saddle sadlooking sadness sadness sadness sadness safe safe safe said said said 
+t[2687]: t t t t t t t table table table table table table table tables tags tahiti take take take take take take take take 
+u[195]: uglier ugly ugly ugly ugly ugly ugly ugly ugly ugly ugly ugly uhhuh uhoh ummm uncle uncle uncle uncle uncle uncle uncle uncle uncles uncross 
+v[52]: v v v v v v v van vargas vargas vargas vargas vargas vargases vase vases velvety velvety verso very very very very very very 
+w[1442]: wad wait wait wait wait wait wait wait waited waited waited waited waited waiters waiting waiting waiting waiting waiting waiting waiting waiting waiting waiting waiting 
+x[3]: x x x 
+y[445]: yakketyyak yard yard yard yard yard yard yard yeah yeah yeah year year year year year year year year years years yee yell yell yelling 
+z[4]: zas zeze zeze zillion 
