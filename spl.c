@@ -101,3 +101,74 @@ void initialize_buckets(int book_id, int word_count) {
     }
 }
 
+
+void distribute_to_buckets(int book_id, char** words, int count) {
+    for(int w = 0; w < count; w++) {
+        char first = words[w][0];
+        int bucket;
+        
+        if(first >= 'a' && first <= 'z') {
+            bucket = first - 'a';
+        } else {
+            bucket = 25;  
+        }
+        
+        all_buckets[book_id][bucket][bucket_sizes[book_id][bucket]++] = words[w];
+    }
+}
+
+void sort_bucket(int book_id, int bucket) {
+    for(int i = 1; i < bucket_sizes[book_id][bucket]; i++) {
+        char* key = all_buckets[book_id][bucket][i];
+        int j = i - 1;
+        
+        while(j >= 0 && strcmp(all_buckets[book_id][bucket][j], key) > 0) {
+            all_buckets[book_id][bucket][j + 1] = all_buckets[book_id][bucket][j];
+            j--;
+        }
+        
+        all_buckets[book_id][bucket][j + 1] = key;
+    }
+}
+
+void sort_all_buckets(int book_id) {
+    printf(" Sorting words alphabetically in buckets...\n");
+    
+    for(int b = 0; b < 26; b++) {
+        if(bucket_sizes[book_id][b] > 0) {
+            sort_bucket(book_id, b);
+        }
+    }
+    
+    printf(" All buckets sorted successfully!\n");
+}
+
+void write_output_file(char* filename, int book_id, int count) {
+    char outname[50];
+    sprintf(outname, "%s_perfect.txt", filename);
+    
+    FILE* out = fopen(outname, "w");
+    if(!out) {
+        printf(" Failed to create output file: %s\n", outname);
+        return;
+    }
+    
+    fprintf(out, "=== %s - PERFECT A-Z SORT ===\n", filename);
+    fprintf(out, "Total words: %d\n\n", count);
+    
+    for(int b = 0; b < 26; b++) {
+        if(bucket_sizes[book_id][b] > 0) {
+            fprintf(out, "%c[%d]: ", 'a' + b, bucket_sizes[book_id][b]);
+            
+            for(int i = 0; i < bucket_sizes[book_id][b] && i < 25; i++) {
+                fprintf(out, "%s ", all_buckets[book_id][b][i]);
+            }
+            
+            fprintf(out, "\n");
+        }
+    }
+    
+    fclose(out);
+    printf(" Output file created: %s\n", outname);
+}
+
