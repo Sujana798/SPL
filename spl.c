@@ -249,4 +249,82 @@ int count_word_in_book(int book, char* keyword) {
     return count;
 }
 
+void case1_exact_search() {
+    char keyword[50];
+    
+    display_search_header();
+    printf(" Enter word to search: ");
+    scanf("%s", keyword);
+
+    for(int i = 0; keyword[i]; i++) {
+        keyword[i] = tolower(keyword[i]);
+    }
+    
+    int file_count[4] = {0};
+    printf("\n Searching across all 4 books...\n");
+    
+    for(int book = 0; book < 4; book++) {
+        file_count[book] = count_word_in_book(book, keyword);
+    }
+    
+    display_search_results_header(keyword);
+    
+    int found_any = 0;
+    for(int book = 0; book < 4; book++) {
+        if(file_count[book] > 0) {
+            printf(" %-12s    %3d times\n", book_names[book], file_count[book]);
+            found_any = 1;
+        }
+    }
+    
+    int total = 0;
+    for(int book = 0; book < 4; book++) {
+        total += file_count[book];
+    }
+    
+    print_separator('=', 40);
+    if(!found_any) {
+        printf(" No matches found!\n");
+    } else {
+        printf(" SUCCESS: %d total matches across all books\n", total);
+    }
+    print_separator('=', 50);
+}
+
+int collect_prefix_suggestions(char* prefix, char suggestions[][50], int* file_counts) {
+    int suggestion_count = 0;
+    
+    printf("\n Searching for words starting with '%s'...\n", prefix);
+    
+    int bucket = tolower(prefix[0]) - 'a';
+    if(bucket < 0 || bucket >= 26) {
+        bucket = 25;
+    }
+    
+    for(int book = 0; book < 4; book++) {
+        for(int i = 0; i < bucket_sizes[book][bucket] && suggestion_count < 1000; i++) {
+            char* word = all_buckets[book][bucket][i];
+            
+            if(strncmp(word, prefix, strlen(prefix)) == 0) {
+                int is_duplicate = 0;
+                for(int j = 0; j < suggestion_count; j++) {
+                    if(strcmp(suggestions[j], word) == 0) {
+                        is_duplicate = 1;
+                        break;
+                    }
+                }
+                
+                if(!is_duplicate) {
+                    strcpy(suggestions[suggestion_count], word);
+                    file_counts[book]++;
+                    suggestion_count++;
+                }
+            }
+        }
+    }
+    
+    return suggestion_count;
+}
+
+
 
