@@ -172,3 +172,81 @@ void write_output_file(char* filename, int book_id, int count) {
     printf(" Output file created: %s\n", outname);
 }
 
+void perfect_process(char* filename, int book_id) {
+    print_processing_header(filename);
+    
+    FILE* fp = fopen(filename, "r");
+    if(!fp) {
+        printf(" ERROR: Could not open file %s\n", filename);
+        return;
+    }
+    
+    fseek(fp, 0, SEEK_END);
+    long size = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+    
+    char* text = malloc(size + 1);
+    fread(text, 1, size, fp);
+    text[size] = '\0';
+    fclose(fp);
+    
+    printf(" Cleaning text data...\n");
+    long clean_len = 0;
+    char* clean = clean_text_data(text, size, &clean_len);
+    printf(" Text cleaned: %ld characters\n", clean_len);
+    
+    printf(" Extracting words...\n");
+    int count = 0;
+    char** words = extract_words(clean, clean_len, &count);
+    
+    total_words[book_id] = count;
+    print_file_stats(size, count);
+    
+    printf(" Initializing storage buckets...\n");
+    initialize_buckets(book_id, count);
+    printf(" 26 buckets initialized!\n");
+    
+    printf(" Distributing words to buckets...\n");
+    distribute_to_buckets(book_id, words, count);
+    printf(" Words distributed across buckets!\n");
+    
+    sort_all_buckets(book_id);
+    
+    printf(" Writing output file...\n");
+    write_output_file(filename, book_id, count);
+    
+    free(words);
+    free(text);
+    free(clean);
+    
+    printf(" %s PERFECTLY PROCESSED!\n", filename);
+    print_separator('=', 60);
+}
+
+void display_search_header() {
+    printf("\n");
+    print_separator('=', 50);
+    printf("       EXACT WORD SEARCH        \n");
+    print_separator('=', 50);
+}
+
+void display_search_results_header(char* keyword) {
+    printf("\n SEARCH RESULTS FOR: '%s'\n", keyword);
+    print_separator('=', 40);
+}
+
+int count_word_in_book(int book, char* keyword) {
+    int count = 0;
+    
+    for(int b = 0; b < 26; b++) {
+        for(int i = 0; i < bucket_sizes[book][b]; i++) {
+            if(strcmp(all_buckets[book][b][i], keyword) == 0) {
+                count++;
+            }
+        }
+    }
+    
+    return count;
+}
+
+
