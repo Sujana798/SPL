@@ -399,5 +399,97 @@ void check_exact_match(char* prefix, char suggestions[][50], int count, int* fil
     }
 }
 
+void case2_prefix_search() {
+    char prefix[50] = {0};
+    
+    printf("\n");
+    print_separator('=', 50);
+    printf("       PREFIX SEARCH (Paginated)      \n");
+    print_separator('=', 50);
+    printf(" Enter prefix (e.g., 'r'): ");
+    scanf("%s", prefix);
+    
+    while(1) {
+        char suggestions[1000][50];
+        int file_counts[4] = {0};
+        int suggestion_count = collect_prefix_suggestions(prefix, suggestions, file_counts);
+        
+        sort_suggestions_alphabetically(suggestions, suggestion_count);
+        
+        const int PAGE_SIZE = 20;
+        int total_pages = (suggestion_count + PAGE_SIZE - 1) / PAGE_SIZE;
+        int current_page = 0;
+        
+        printf("\n Found %d unique words | %d pages total\n", 
+               suggestion_count, total_pages);
+
+        while(1) {
+            int start = current_page * PAGE_SIZE;
+            int end = (current_page + 1) * PAGE_SIZE;
+            if(end > suggestion_count) {
+                end = suggestion_count;
+            }
+            
+            display_page_header(current_page, total_pages, start, end, prefix);
+            display_page_words(suggestions, start, end);
+            display_page_commands();
+            
+            char command;
+            scanf(" %c", &command);
+            
+            if(command == 'N' || command == 'n') {
+                if(current_page < total_pages - 1) {
+                    current_page++;
+                } else {
+                    printf(" Already on last page!\n");
+                }
+            }
+            else if(command == 'P' || command == 'p') {
+                if(current_page > 0) {
+                    current_page--;
+                } else {
+                    printf(" Already on first page!\n");
+                }
+            }
+            else if(command == 'L' || command == 'l') {
+                current_page = total_pages - 1;
+            }
+            else if(command == 'E' || command == 'e') {
+                check_exact_match(prefix, suggestions, suggestion_count, file_counts);
+            }
+            else if(command == 'A' || command == 'a') {
+                printf(" Current prefix: '%s' + ", prefix);
+                char add[10];
+                scanf("%s", add);
+                strcat(prefix, add);
+                printf(" New prefix: '%s'\n", prefix);
+                printf("Press Enter to search...");
+                while(getchar() != '\n');
+                getchar();
+                break; 
+            }
+            else if(command == 'D' || command == 'd') {
+                int len = strlen(prefix);
+                if(len > 0) {
+                    prefix[len-1] = '\0';
+                    printf(" New prefix: '%s'\n", prefix);
+                } else {
+                    printf(" Cannot delete more characters!\n");
+                }
+                printf("Press Enter to search...");
+                while(getchar() != '\n');
+                getchar();
+                break; 
+            }
+            else if(command == '0') {
+                return; 
+            }
+            else {
+                printf(" Invalid command!\n");
+            }
+        }
+    }
+}
+
 
 
