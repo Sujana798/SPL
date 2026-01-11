@@ -326,5 +326,78 @@ int collect_prefix_suggestions(char* prefix, char suggestions[][50], int* file_c
     return suggestion_count;
 }
 
+void sort_suggestions_alphabetically(char suggestions[][50], int count) {
+    for(int i = 0; i < count - 1; i++) {
+        for(int j = 0; j < count - i - 1; j++) {
+            if(strcmp(suggestions[j], suggestions[j+1]) > 0) {
+                char temp[50];
+                strcpy(temp, suggestions[j]);
+                strcpy(suggestions[j], suggestions[j+1]);
+                strcpy(suggestions[j+1], temp);
+            }
+        }
+    }
+}
+
+void display_page_header(int current_page, int total_pages, int start, int end, char* prefix) {
+    printf("\n PAGE %d/%d | Words %d-%d | Prefix: '%s'\n", 
+           current_page + 1, total_pages, start + 1, end, prefix);
+    print_separator('=', 50);
+}
+
+void display_page_words(char suggestions[][50], int start, int end) {
+    for(int i = start; i < end; i++) {
+        printf("%4d. %s\n", i + 1, suggestions[i]);
+    }
+}
+
+void display_page_commands() {
+    printf("\n AVAILABLE COMMANDS:\n");
+    printf("N = Next Page\n");
+    printf("P = Previous Page\n");
+    printf("L = Last Page\n");
+    printf("E = Check Exact Match\n");
+    printf("A = Add to Prefix\n");
+    printf("D = Delete from Prefix\n");
+    printf("0 = Back to Menu\n");
+    printf(" Enter command: ");
+}
+
+void check_exact_match(char* prefix, char suggestions[][50], int count, int* file_counts) {
+    int found_exact = 0;
+    
+    for(int i = 0; i < count; i++) {
+        if(strcmp(suggestions[i], prefix) == 0) {
+            found_exact = 1;
+            break;
+        }
+    }
+    
+    if(found_exact) {
+        printf("\n EXACT MATCH FOUND: '%s'\n", prefix);
+        printf(" OCCURRENCE BY BOOK:\n");
+        print_separator('=', 30);
+        
+        int total_count = 0;
+        for(int book = 0; book < 4; book++) {
+            if(file_counts[book] > 0) {
+                printf(" %-12s → %d times\n", book_names[book], file_counts[book]);
+                total_count += file_counts[book];
+            }
+        }
+        
+        print_separator('=', 30);
+        printf("Total occurrences: %d\n", total_count);
+        printf("\nPress Enter to continue...");
+        while(getchar() != '\n');
+        getchar();
+    } else {
+        printf("\n No exact match found for '%s'\n", prefix);
+        printf("Press Enter to continue...");
+        while(getchar() != '\n');
+        getchar();
+    }
+}
+
 
 
