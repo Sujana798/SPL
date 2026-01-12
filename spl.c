@@ -381,7 +381,7 @@ void check_exact_match(char* prefix, char suggestions[][50], int count, int* fil
         int total_count = 0;
         for(int book = 0; book < 4; book++) {
             if(file_counts[book] > 0) {
-                printf(" %-12s → %d times\n", book_names[book], file_counts[book]);
+                printf(" %-12s   %d times\n", book_names[book], file_counts[book]);
                 total_count += file_counts[book];
             }
         }
@@ -491,5 +491,86 @@ void case2_prefix_search() {
     }
 }
 
+void display_menu() {
+    printf("\n");
+    print_separator('=', 50);
+    printf("       TEXT ANALYZER PRO       \n");
+    print_separator('=', 50);
+    printf("1. Exact Keyword Search\n");
+    printf("2. Prefix Search (Interactive)\n");
+    printf("3. A-Z Column Statistics\n");
+    printf("4. Word Frequency Count\n");
+    printf("5. Longest/Shortest Words\n");
+    printf("0. Exit Program\n");
+    print_separator('=', 50);
+    printf(" Enter your choice: ");
+}
+
+int main() {
+    printf(" TEXT ANALYZER PRO - PERFECT PROCESSOR v2.0\n");
+    print_separator('=', 60);
+    printf("Starting book processing...\n");
+    
+    perfect_process("book1.txt", 0);
+    perfect_process("book2.txt", 1);
+    perfect_process("book3.txt", 2);
+    perfect_process("book4.txt", 3);
+    
+    printf("\n ALL BOOKS SUCCESSFULLY PROCESSED!\n");
+    printf(" Starting interactive menu system...\n\n");
+    
+    int choice;
+    while(1) {
+        display_menu();
+        
+        if(scanf("%d", &choice) != 1) {
+            printf(" Invalid input! Please enter a number.\n");
+            while(getchar() != '\n');
+            continue;
+        }
+        
+        switch(choice) {
+            case 1:
+                case1_exact_search();
+                break;
+            
+            case 2:
+                case2_prefix_search();
+                break;
+            
+            case 3:
+                printf("\n A-Z Column Statistics\n");
+                printf(" Feature coming soon!\n");
+                break;
+            
+            case 4:
+                printf("\n Word Frequency Count\n");
+                printf(" Feature coming soon!\n");
+                break;
+            
+            case 5:
+                printf("\n Longest/Shortest Words Analysis\n");
+                printf(" Feature coming soon!\n");
+                break;
+            
+            case 0:
+                printf("\n");
+                print_separator('=', 50);
+                printf(" Thank you for using Text Analyzer Pro!\n");
+                printf(" Have a great day!\n");
+                print_separator('=', 50);
+                return 0;
+            
+            default:
+                printf("\n Invalid option! Please choose 0-5\n");
+        }
+        
+        printf("\nPress Enter to continue...");
+        while(getchar() != '\n');
+        getchar();
+    }
+    
+    return 0;
+}
 
 
