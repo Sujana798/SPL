@@ -501,6 +501,7 @@ void display_menu() {
     printf("3. A-Z Column Statistics\n");
     printf("4. Word Frequency Count\n");
     printf("5. Longest/Shortest Words\n");
+    printf("6. Search History\n");
     printf("0. Exit Program\n");
     print_separator('=', 50);
     printf(" Enter your choice: ");
@@ -553,6 +554,11 @@ int main() {
                 printf(" Feature coming soon!\n");
                 break;
             
+            case 6:
+                printf("\n Longest/Shortest Words Analysis\n");
+                printf(" Feature coming soon!\n");
+                break;
+            
             case 0:
                 printf("\n");
                 print_separator('=', 50);
@@ -572,5 +578,6 @@ int main() {
     
     return 0;
 }
+
 
 
