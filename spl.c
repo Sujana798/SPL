@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <dirent.h> 
 
 char*** all_buckets[4];           
 int bucket_sizes[4][26];         
@@ -12,6 +13,84 @@ char* book_names[4] = {
     "book3.txt", 
     "book4.txt"
 };
+
+void print_separator(char symbol, int length);
+void print_processing_header(char* filename);
+
+
+int is_pdf_file(const char* filename) {
+    int len = strlen(filename);
+    if (len < 4) return 0;
+    return (strcmp(filename + len - 4, ".pdf") == 0 || 
+            strcmp(filename + len - 4, ".PDF") == 0);
+}
+
+
+int convert_pdf_to_text(const char* pdf_file, char* txt_file) {
+    printf(" PDF detected: %s\n", pdf_file);
+    printf(" Converting to text...\n");
+    
+    sprintf(txt_file, "%s.txt", pdf_file);
+    
+    char cmd[512];
+    sprintf(cmd, "pdftotext \"%s\" \"%s\"", pdf_file, txt_file);
+    
+    int result = system(cmd);
+    
+    if (result == 0) {
+        printf(" SUCCESS: %s created\n", txt_file);
+        return 1;
+    } else {
+        printf(" FAILED! Make sure pdftotext.exe is in folder.\n");
+        return 0;
+    }
+}
+
+
+void prepare_input_files() {
+    printf("\n");
+    print_separator('=', 60);
+    printf(" AUTO FILE DETECTION\n");
+    print_separator('=', 60);
+    
+    DIR *dir = opendir(".");
+    struct dirent *entry;
+    int file_count = 0;
+    
+    if (!dir) {
+        printf(" Error: Cannot read directory!\n");
+        return;
+    }
+    
+    printf("\n Scanning for PDF and TXT files...\n\n");
+    
+    while ((entry = readdir(dir)) != NULL && file_count < 4) {
+        char* filename = entry->d_name;
+        
+        if (strcmp(filename, ".") == 0 || strcmp(filename, "..") == 0) {
+            continue;
+        }
+        
+        if (is_pdf_file(filename)) {
+            char txt_file[256];
+            if (convert_pdf_to_text(filename, txt_file)) {
+                book_names[file_count] = strdup(txt_file);
+                printf(" Book %d: %s (from PDF)\n", file_count + 1, txt_file);
+                file_count++;
+            }
+        }
+        else if (strstr(filename, ".txt") && !strstr(filename, "_perfect.txt")) {
+            book_names[file_count] = strdup(filename);
+            printf(" Book %d: %s\n", file_count + 1, filename);
+            file_count++;
+        }
+    }
+    
+    closedir(dir);
+    
+    printf("\n Total files detected: %d\n", file_count);
+    print_separator('=', 60);
+}
 
 void print_separator(char symbol, int length) {
     for(int i = 0; i < length; i++) {
@@ -510,13 +589,22 @@ void display_menu() {
 int main() {
     printf(" TEXT ANALYZER PRO - PERFECT PROCESSOR v2.0\n");
     print_separator('=', 60);
+    prepare_input_files(); 
     printf("Starting book processing...\n");
-    
-    perfect_process("book1.txt", 0);
-    perfect_process("book2.txt", 1);
-    perfect_process("book3.txt", 2);
-    perfect_process("book4.txt", 3);
-    
+
+    for (int i = 0; i < 4; i++) {
+        FILE* test = fopen(book_names[i], "r");
+        if (test) {
+            fclose(test);
+            perfect_process(book_names[i], i);
+        } else {
+            printf("\n");
+            print_separator('=', 60);
+            printf(" SKIPPING: %s (not found)\n", book_names[i]);
+            print_separator('=', 60);
+        }
+    }
+
     printf("\n ALL BOOKS SUCCESSFULLY PROCESSED!\n");
     printf(" Starting interactive menu system...\n\n");
     
@@ -578,6 +666,5 @@ int main() {
     
     return 0;
 }
-
 
 
