@@ -4,6 +4,9 @@
 #include <ctype.h>
 #include <dirent.h> 
 
+int is_pdf_file(char* filename);
+int convert_pdf_to_text(char* pdf_file, char* txt_file);
+
 char*** all_buckets[4];           
 int bucket_sizes[4][26];         
 int total_words[4];               
@@ -16,35 +19,6 @@ char* book_names[4] = {
 
 void print_separator(char symbol, int length);
 void print_processing_header(char* filename);
-
-
-int is_pdf_file(const char* filename) {
-    int len = strlen(filename);
-    if (len < 4) return 0;
-    return (strcmp(filename + len - 4, ".pdf") == 0 || 
-            strcmp(filename + len - 4, ".PDF") == 0);
-}
-
-
-int convert_pdf_to_text(const char* pdf_file, char* txt_file) {
-    printf(" PDF detected: %s\n", pdf_file);
-    printf(" Converting to text...\n");
-    
-    sprintf(txt_file, "%s.txt", pdf_file);
-    
-    char cmd[512];
-    sprintf(cmd, "pdftotext \"%s\" \"%s\"", pdf_file, txt_file);
-    
-    int result = system(cmd);
-    
-    if (result == 0) {
-        printf(" SUCCESS: %s created\n", txt_file);
-        return 1;
-    } else {
-        printf(" FAILED! Make sure pdftotext.exe is in folder.\n");
-        return 0;
-    }
-}
 
 
 void prepare_input_files() {
@@ -91,6 +65,37 @@ void prepare_input_files() {
     printf("\n Total files detected: %d\n", file_count);
     print_separator('=', 60);
 }
+
+// PDF check function
+int is_pdf_file(char* filename) {
+    int len = strlen(filename);
+    return (len > 4 && strcmp(filename + len - 4, ".pdf") == 0);
+}
+
+int convert_pdf_to_text(char* pdf_file, char* txt_file) {
+    char cmd[512];
+    
+    strcpy(txt_file, pdf_file);
+    int len = strlen(txt_file);
+    if(len >= 4) {
+        txt_file[len-4] = '\0';
+        strcat(txt_file, ".txt");
+    }
+    
+    sprintf(cmd, "gswin64c.exe -q -sDEVICE=txtwrite -sOutputFile=\"%s\" -dNOPAUSE -dBATCH \"%s\" >nul 2>&1", 
+            txt_file, pdf_file);
+    
+    system(cmd);  
+    
+    FILE* test = fopen(txt_file, "r");
+    if(test) {
+        fclose(test);
+        printf(" %s converted!\n", txt_file);  
+        return 1;
+    }
+    return 0;
+}
+
 
 void print_separator(char symbol, int length) {
     for(int i = 0; i < length; i++) {
@@ -663,8 +668,19 @@ int main() {
         while(getchar() != '\n');
         getchar();
     }
+  
+    for(int book = 0; book < 4; book++) {
+        if(book_names[book]) free(book_names[book]);
+        if(all_buckets[book]) {
+            for(int b = 0; b < 26; b++) {
+                free(all_buckets[book][b]);
+            }
+            free(all_buckets[book]);
+        }
+    }
     
     return 0;
+
 }
 
 
