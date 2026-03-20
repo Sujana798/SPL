@@ -575,6 +575,81 @@ void case2_prefix_search() {
     }
 }
 
+void case3_semantic_search() {
+    char keyword[50];
+    
+    printf("\n");
+    print_separator('=', 50);
+    printf("    SEMANTIC SEARCH (AI Synonyms)\n");
+    print_separator('=', 50);
+    printf(" Enter word: ");
+    scanf("%s", keyword);
+    
+    for(int i = 0; keyword[i]; i++) keyword[i] = tolower(keyword[i]);
+    
+    char json_body[512];
+    sprintf(json_body,
+    "{\"model\":\"google/gemma-3-4b-it:free\","
+    "\"messages\":[{\"role\":\"user\","
+    "\"content\":\"Give 6 synonyms for '%s'. "
+    "Return ONLY comma-separated words, no explanation.\"}]}",
+    keyword); 
+
+    HINTERNET hInternet = InternetOpen("Mozilla/5.0", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+    if (!hInternet) { printf(" Internet open failed!\n"); return; }
+    
+    HINTERNET hConnect = InternetConnect(hInternet, "openrouter.ai",
+        INTERNET_DEFAULT_HTTPS_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 0);
+    if (!hConnect) { printf(" Connection failed!\n"); InternetCloseHandle(hInternet); return; }
+    
+    HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", "/api/v1/chat/completions",
+        NULL, NULL, NULL, INTERNET_FLAG_SECURE, 0);
+    if (!hRequest) { printf(" Request failed!\n"); InternetCloseHandle(hConnect); InternetCloseHandle(hInternet); return; }
+    
+    char headers[512];
+    sprintf(headers,
+        "Content-Type: application/json\r\n"
+        "Authorization: Bearer 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\r\n");
+    
+    HttpSendRequest(hRequest, headers, strlen(headers), json_body, strlen(json_body));
+    
+    char response[8192] = {0};
+    DWORD bytesRead = 0;
+    DWORD totalRead = 0;
+    
+    while(InternetReadFile(hRequest, response + totalRead,
+          sizeof(response) - totalRead - 1, &bytesRead) && bytesRead > 0) {
+        totalRead += bytesRead;
+    }
+    response[totalRead] = '\0';
+    
+    char* text_start = strstr(response, "\"content\":\"");
+    if (text_start) {
+        text_start += 11;
+        char* text_end = strstr(text_start, "\"");
+        if (text_end) *text_end = '\0';
+        
+        printf("\n SYNONYMS FOR '%s':\n", keyword);
+        print_separator('=', 40);
+        
+        char* token = strtok(text_start, ",");
+        int count = 1;
+        while (token != NULL) {
+            while(*token == ' ') token++;
+            printf("  %d. %s\n", count++, token);
+            token = strtok(NULL, ",");
+        }
+        print_separator('=', 40);
+    } else {
+        printf(" Could not get synonyms!\n");
+    }
+    
+    InternetCloseHandle(hRequest);
+    InternetCloseHandle(hConnect);
+    InternetCloseHandle(hInternet);
+}
+
+
 void display_menu() {
     printf("\n");
     print_separator('=', 50);
@@ -582,10 +657,8 @@ void display_menu() {
     print_separator('=', 50);
     printf("1. Exact Keyword Search\n");
     printf("2. Prefix Search (Interactive)\n");
-    printf("3. A-Z Column Statistics\n");
+    printf("3. Semantic Seacrh (AI Synonyms)\n");
     printf("4. Word Frequency Count\n");
-    printf("5. Longest/Shortest Words\n");
-    printf("6. Search History\n");
     printf("0. Exit Program\n");
     print_separator('=', 50);
     printf(" Enter your choice: ");
@@ -633,22 +706,11 @@ int main() {
                 break;
             
             case 3:
-                printf("\n A-Z Column Statistics\n");
-                printf(" Feature coming soon!\n");
+                case3_semantic_search();
                 break;
             
             case 4:
                 printf("\n Word Frequency Count\n");
-                printf(" Feature coming soon!\n");
-                break;
-            
-            case 5:
-                printf("\n Longest/Shortest Words Analysis\n");
-                printf(" Feature coming soon!\n");
-                break;
-            
-            case 6:
-                printf("\n Longest/Shortest Words Analysis\n");
                 printf(" Feature coming soon!\n");
                 break;
             
