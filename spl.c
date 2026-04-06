@@ -2,10 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <math.h>
 #include <dirent.h> 
+#include <windows.h>
+#include <wininet.h>
 
 int is_pdf_file(char* filename);
 int convert_pdf_to_text(char* pdf_file, char* txt_file);
+int count_word_in_book(int book, char* keyword);
 
 char*** all_buckets[4];           
 int bucket_sizes[4][26];         
@@ -17,8 +21,15 @@ char* book_names[4] = {
     "book4.txt"
 };
 
+double tfidf_vectors[4][1000]; 
+int unique_word_count = 0;
+char unique_words[1000][50];  
+char search_history[100][50];
+int history_count = 0;  
+
 void print_separator(char symbol, int length);
 void print_processing_header(char* filename);
+void add_to_history(char* word);
 
 
 void prepare_input_files() {
@@ -36,7 +47,7 @@ void prepare_input_files() {
         return;
     }
     
-    printf("\n Scanning for PDF and TXT files...\n\n");
+    printf("\n Scanning for PDF and TXT files\n\n");
     
     while ((entry = readdir(dir)) != NULL && file_count < 4) {
         char* filename = entry->d_name;
@@ -66,7 +77,7 @@ void prepare_input_files() {
     print_separator('=', 60);
 }
 
-// PDF check function
+
 int is_pdf_file(char* filename) {
     int len = strlen(filename);
     return (len > 4 && strcmp(filename + len - 4, ".pdf") == 0);
@@ -96,12 +107,102 @@ int convert_pdf_to_text(char* pdf_file, char* txt_file) {
     return 0;
 }
 
+int count_word_in_book(int book, char* keyword) {
+    int count = 0;
+
+    char lower_keyword[50];
+    strcpy(lower_keyword, keyword);
+    for(int i = 0; lower_keyword[i]; i++) {
+        lower_keyword[i] = tolower(lower_keyword[i]);
+    }
+    int bucket = lower_keyword[0] - 'a';
+    if(bucket < 0 || bucket >= 26) bucket = 25;
+    
+    for(int i = 0; i < bucket_sizes[book][bucket]; i++) {
+        if(strcmp(all_buckets[book][bucket][i], lower_keyword) == 0) {
+            count++;
+        }
+    }
+    
+    return count;
+}
 
 void print_separator(char symbol, int length) {
     for(int i = 0; i < length; i++) {
         printf("%c", symbol);
     }
     printf("\n");
+}
+
+void build_tfidf_vectors() {
+    printf("Building TF-IDF vectors \n");
+    for(int book = 0; book < 4; book++) {
+        for(int b = 0; b < 26; b++) {
+            for(int i = 0; i < bucket_sizes[book][b]; i++) {
+                char* word = all_buckets[book][b][i];
+                int found = 0;
+                
+                for(int u = 0; u < unique_word_count; u++) {
+                    if(strcmp(unique_words[u], word) == 0) {
+                        found = 1;
+                        break;
+                    }
+                }
+                
+                if(!found && unique_word_count < 1000) {
+                    strcpy(unique_words[unique_word_count], word);
+                    unique_word_count++;
+                }
+            }
+        }
+    }
+    
+    printf(" Vocabulary size: %d unique words\n", unique_word_count);
+    
+    for(int book = 0; book < 4; book++) {
+        for(int u = 0; u < unique_word_count; u++) {
+            int word_freq = count_word_in_book(book, unique_words[u]);
+            int doc_freq = 0;
+            
+            for(int b = 0; b < 4; b++) {
+                if(count_word_in_book(b, unique_words[u]) > 0) doc_freq++;
+            }
+            
+            double tf = (double)word_freq / total_words[book];
+            double idf = log(4.0 / (1.0 + doc_freq));
+            tfidf_vectors[book][u] = tf * idf;
+        }
+    }
+    printf(" TF-IDF vectors ready!\n");
+}
+
+void query_to_tfidf(char* query, double query_vector[1000]) {
+    memset(query_vector, 0, sizeof(double) * 1000);
+    
+    for(int u = 0; u < unique_word_count; u++) {
+        if(strstr(query, unique_words[u])) {
+            double tf = 1.0; 
+            double idf = log(4.0 / 1.0);
+            query_vector[u] = tf * idf;
+        }
+    }
+}
+
+double cosine_similarity(double vec1[1000], double vec2[1000], int limit) {
+    double dot_product = 0.0;
+    double norm1 = 0.0, norm2 = 0.0;
+    
+    for(int i = 0; i < limit; i++) {
+        dot_product += vec1[i] * vec2[i];
+        norm1 += vec1[i] * vec1[i];
+        norm2 += vec2[i] * vec2[i];
+    }
+    
+    norm1 = sqrt(norm1);
+    norm2 = sqrt(norm2);
+    
+    if(norm1 == 0 || norm2 == 0) return 0.0;
+    return dot_product / (norm1 * norm2);
 }
 
 void print_processing_header(char* filename) {
@@ -319,26 +420,13 @@ void display_search_results_header(char* keyword) {
     print_separator('=', 40);
 }
 
-int count_word_in_book(int book, char* keyword) {
-    int count = 0;
-    
-    for(int b = 0; b < 26; b++) {
-        for(int i = 0; i < bucket_sizes[book][b]; i++) {
-            if(strcmp(all_buckets[book][b][i], keyword) == 0) {
-                count++;
-            }
-        }
-    }
-    
-    return count;
-}
-
 void case1_exact_search() {
     char keyword[50];
     
     display_search_header();
     printf(" Enter word to search: ");
     scanf("%s", keyword);
+    add_to_history(keyword);
 
     for(int i = 0; keyword[i]; i++) {
         keyword[i] = tolower(keyword[i]);
@@ -492,6 +580,7 @@ void case2_prefix_search() {
     print_separator('=', 50);
     printf(" Enter prefix (e.g., 'r'): ");
     scanf("%s", prefix);
+    add_to_history(prefix);
     
     while(1) {
         char suggestions[1000][50];
@@ -574,7 +663,6 @@ void case2_prefix_search() {
         }
     }
 }
-
 void case3_semantic_search() {
     char keyword[50];
     
@@ -584,6 +672,7 @@ void case3_semantic_search() {
     print_separator('=', 50);
     printf(" Enter word: ");
     scanf("%s", keyword);
+    add_to_history(keyword);
     
     for(int i = 0; keyword[i]; i++) keyword[i] = tolower(keyword[i]);
     
@@ -605,11 +694,22 @@ void case3_semantic_search() {
     HINTERNET hRequest = HttpOpenRequest(hConnect, "POST", "/api/v1/chat/completions",
         NULL, NULL, NULL, INTERNET_FLAG_SECURE, 0);
     if (!hRequest) { printf(" Request failed!\n"); InternetCloseHandle(hConnect); InternetCloseHandle(hInternet); return; }
+
+    char api_key[200] = {0};
+      FILE* key_file = fopen("api_key.txt", "r");
+      if(key_file) {
+      fgets(api_key, sizeof(api_key), key_file);
+      api_key[strcspn(api_key, "\n")] = 0;
+      fclose(key_file);
+      } else {
+      printf(" Error: api_key.txt not found!\n");
+      return;
+    }
     
     char headers[512];
     sprintf(headers,
         "Content-Type: application/json\r\n"
-        "Authorization: Bearer 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\r\n");
+        "Authorization: Bearer %s\r\n", api_key);
     
     HttpSendRequest(hRequest, headers, strlen(headers), json_body, strlen(json_body));
     
@@ -649,6 +749,120 @@ void case3_semantic_search() {
     InternetCloseHandle(hInternet);
 }
 
+void case4_word_frequency() {
+    
+    char* stopwords[] = {
+        "the", "and", "of", "a", "an", "in", "is", "it", "to", "was",
+        "for", "on", "are", "as", "with", "his", "they", "at", "be",
+        "this", "from", "or", "had", "by", "not", "but", "what", "all",
+        "were", "when", "we", "there", "can", "an", "your", "which",
+        "their", "said", "if", "do", "will", "each", "about", "how",
+        "up", "out", "them", "then", "she", "many", "some", "so", "its",
+        "than", "he", "been", "has", "have", "him", "her", "you", "my",
+        "no", "one", "would", "into", "our", "could", "who", "more",
+        "i", "me", "us", "that", "any", "may", "also", "those", NULL
+    };
+    
+    int n;
+    printf("\n");
+    print_separator('=', 50);
+    printf("    WORD FREQUENCY COUNT\n");
+    print_separator('=', 50);
+    printf(" Enter how many top words to show: ");
+    scanf("%d", &n);
+    
+    for(int book = 0; book < 4; book++) {
+        if(bucket_sizes[book][0] == 0 && bucket_sizes[book][1] == 0) 
+        continue;
+
+        char top_words[1000][50];
+        int top_counts[1000];
+        int top_size = 0;
+        
+       for(int b = 0; b < 26; b++) {
+    int i = 0;
+    while(i < bucket_sizes[book][b]) {
+        char* word = all_buckets[book][b][i];
+        
+        int freq = 0;
+        while(i < bucket_sizes[book][b] && 
+              strcmp(all_buckets[book][b][i], word) == 0) {
+            freq++;
+            i++;
+        }
+
+        if(strlen(word) <= 2) continue;
+        
+        int is_stop = 0;
+        for(int s = 0; stopwords[s] != NULL; s++) {
+            if(strcmp(word, stopwords[s]) == 0) {
+                is_stop = 1;
+                break;
+            }
+        }
+        
+        if(!is_stop && top_size < 1000) {
+            strcpy(top_words[top_size], word);
+            top_counts[top_size] = freq;
+            top_size++;
+        }
+    }
+}
+        
+        for(int i = 0; i < top_size - 1; i++) {
+            for(int j = 0; j < top_size - i - 1; j++) {
+                if(top_counts[j] < top_counts[j+1]) {
+
+                    int tmp = top_counts[j];
+                    top_counts[j] = top_counts[j+1];
+                    top_counts[j+1] = tmp;
+                   
+                    char tmp_w[50];
+                    strcpy(tmp_w, top_words[j]);
+                    strcpy(top_words[j], top_words[j+1]);
+                    strcpy(top_words[j+1], tmp_w);
+                }
+            }
+        }
+        
+        printf("\n TOP %d WORDS IN %s:\n", n, book_names[book]);
+        print_separator('=', 40);
+        
+        int limit = n < top_size ? n : top_size;
+        for(int i = 0; i < limit; i++) {
+            printf(" %3d. %-20s %d times\n", i+1, top_words[i], top_counts[i]);
+        }
+        print_separator('=', 40);
+    }
+}
+
+void add_to_history(char* word) {
+    if(history_count < 100) {
+        strcpy(search_history[history_count], word);
+        history_count++;
+    }
+}
+
+void case5_search_history() {
+    printf("\n");
+    print_separator('=', 50);
+    printf("    SEARCH HISTORY\n");
+    print_separator('=', 50);
+    
+    if(history_count == 0) {
+        printf(" No searches yet!\n");
+        print_separator('=', 50);
+        return;
+    }
+    
+    printf(" Total searches: %d\n\n", history_count);
+    
+    for(int i = 0; i < history_count; i++) {
+        printf(" %3d. %s\n", i+1, search_history[i]);
+    }
+    
+    print_separator('=', 50);
+}
 
 void display_menu() {
     printf("\n");
@@ -659,13 +873,14 @@ void display_menu() {
     printf("2. Prefix Search (Interactive)\n");
     printf("3. Semantic Seacrh (AI Synonyms)\n");
     printf("4. Word Frequency Count\n");
+    printf("5. Search History\n");
     printf("0. Exit Program\n");
     print_separator('=', 50);
     printf(" Enter your choice: ");
 }
 
 int main() {
-    printf(" TEXT ANALYZER PRO - PERFECT PROCESSOR v2.0\n");
+    printf(" TEXT ANALYZER PRO - PERFECT PROCESSOR \n");
     print_separator('=', 60);
     prepare_input_files(); 
     printf("Starting book processing...\n");
@@ -710,8 +925,11 @@ int main() {
                 break;
             
             case 4:
-                printf("\n Word Frequency Count\n");
-                printf(" Feature coming soon!\n");
+               case4_word_frequency();
+               break;
+            
+            case 5:
+                case5_search_history();
                 break;
             
             case 0:
@@ -744,5 +962,3 @@ int main() {
     return 0;
 
 }
-
-
