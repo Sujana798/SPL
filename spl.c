@@ -1,10 +1,11 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
 #include <dirent.h> 
-#define MAX_WORDS 500
+#define MAX_WORDS 1000
 #define MAX_LEN 1000
 
 typedef struct {
@@ -114,27 +115,52 @@ int convert_pdf_to_text(char* pdf_file, char* txt_file) {
     }
     return 0;
 }
+int binary_search_bucket(char** bucket, int size, char* keyword) {
+    int left = 0, right = size - 1;
+    int first_index = -1;
+
+    while(left <= right) {
+        int mid = (left + right) / 2;
+        int cmp = strcmp(bucket[mid], keyword);
+
+        if(cmp == 0) {
+            first_index = mid;
+            right = mid - 1; 
+        } else if(cmp < 0) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+
+    if(first_index == -1) return 0;
+
+    int count = 0;
+    int i = first_index;
+    while(i < size && strcmp(bucket[i], keyword) == 0) {
+        count++;
+        i++;
+    }
+
+    return count;
+}
 
 int count_word_in_book(int book, char* keyword) {
-    int count = 0;
-
     char lower_keyword[50];
     strcpy(lower_keyword, keyword);
     for(int i = 0; lower_keyword[i]; i++) {
         lower_keyword[i] = tolower(lower_keyword[i]);
     }
+
     int bucket = lower_keyword[0] - 'a';
     if(bucket < 0 || bucket >= 26) bucket = 25;
-    
-    for(int i = 0; i < bucket_sizes[book][bucket]; i++) {
-        if(strcmp(all_buckets[book][bucket][i], lower_keyword) == 0) {
-            count++;
-        }
-    }
-    
-    return count;
-}
 
+    return binary_search_bucket(
+        all_buckets[book][bucket],
+        bucket_sizes[book][bucket],
+        lower_keyword
+    );
+}
 void print_separator(char symbol, int length) {
     for(int i = 0; i < length; i++) {
         printf("%c", symbol);
@@ -143,7 +169,7 @@ void print_separator(char symbol, int length) {
 }
 
 void build_tfidf_vectors() {
-    printf("Building TF-IDF vectors \n");
+    
     for(int book = 0; book < 4; book++) {
         for(int b = 0; b < 26; b++) {
             for(int i = 0; i < bucket_sizes[book][b]; i++) {
@@ -164,8 +190,7 @@ void build_tfidf_vectors() {
             }
         }
     }
-    
-    printf(" Vocabulary size: %d unique words\n", unique_word_count);
+    1
     
     for(int book = 0; book < 4; book++) {
         for(int u = 0; u < unique_word_count; u++) {
@@ -181,36 +206,7 @@ void build_tfidf_vectors() {
             tfidf_vectors[book][u] = tf * idf;
         }
     }
-    printf(" TF-IDF vectors ready!\n");
-}
-
-void query_to_tfidf(char* query, double query_vector[1000]) {
-    memset(query_vector, 0, sizeof(double) * 1000);
     
-    for(int u = 0; u < unique_word_count; u++) {
-        if(strstr(query, unique_words[u])) {
-            double tf = 1.0; 
-            double idf = log(4.0 / 1.0);
-            query_vector[u] = tf * idf;
-        }
-    }
-}
-
-double cosine_similarity(double vec1[1000], double vec2[1000], int limit) {
-    double dot_product = 0.0;
-    double norm1 = 0.0, norm2 = 0.0;
-    
-    for(int i = 0; i < limit; i++) {
-        dot_product += vec1[i] * vec2[i];
-        norm1 += vec1[i] * vec1[i];
-        norm2 += vec2[i] * vec2[i];
-    }
-    
-    norm1 = sqrt(norm1);
-    norm2 = sqrt(norm2);
-    
-    if(norm1 == 0 || norm2 == 0) return 0.0;
-    return dot_product / (norm1 * norm2);
 }
 
 void print_processing_header(char* filename) {
@@ -325,7 +321,6 @@ void sort_bucket(int book_id, int bucket) {
 }
 
 void sort_all_buckets(int book_id) {
-    printf(" Sorting words alphabetically in buckets...\n");
     
     for(int b = 0; b < 26; b++) {
         if(bucket_sizes[book_id][b] > 0) {
@@ -382,30 +377,25 @@ void perfect_process(char* filename, int book_id) {
     fread(text, 1, size, fp);
     text[size] = '\0';
     fclose(fp);
-    
-    printf(" Cleaning text data...\n");
+
     long clean_len = 0;
     char* clean = clean_text_data(text, size, &clean_len);
     printf(" Text cleaned: %ld characters\n", clean_len);
     
-    printf(" Extracting words...\n");
     int count = 0;
     char** words = extract_words(clean, clean_len, &count);
     
     total_words[book_id] = count;
     print_file_stats(size, count);
     
-    printf(" Initializing storage buckets...\n");
     initialize_buckets(book_id, count);
     printf(" 26 buckets initialized!\n");
     
-    printf(" Distributing words to buckets...\n");
     distribute_to_buckets(book_id, words, count);
     printf(" Words distributed across buckets!\n");
     
     sort_all_buckets(book_id);
     
-    printf(" Writing output file...\n");
     write_output_file(filename, book_id, count);
     
     free(words);
@@ -473,36 +463,48 @@ void case1_exact_search() {
 
 int collect_prefix_suggestions(char* prefix, char suggestions[][50], int* file_counts) {
     int suggestion_count = 0;
-    
+
     printf("\n Searching for words starting with '%s'...\n", prefix);
-    
+
     int bucket = tolower(prefix[0]) - 'a';
-    if(bucket < 0 || bucket >= 26) {
-        bucket = 25;
-    }
-    
+    if(bucket < 0 || bucket >= 26) bucket = 25;
+
+    int prefix_len = strlen(prefix);
+
     for(int book = 0; book < 4; book++) {
-        for(int i = 0; i < bucket_sizes[book][bucket] && suggestion_count < 1000; i++) {
-            char* word = all_buckets[book][bucket][i];
-            
-            if(strncmp(word, prefix, strlen(prefix)) == 0) {
-                int is_duplicate = 0;
-                for(int j = 0; j < suggestion_count; j++) {
-                    if(strcmp(suggestions[j], word) == 0) {
-                        is_duplicate = 1;
-                        break;
-                    }
+        int size = bucket_sizes[book][bucket];
+        char** b = all_buckets[book][bucket];
+
+        int left = 0, right = size - 1, start_pos = size;
+        while(left <= right) {
+            int mid = (left + right) / 2;
+            if(strncmp(b[mid], prefix, prefix_len) >= 0) {
+                start_pos = mid;
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        }
+
+        for(int i = start_pos; i < size && suggestion_count < 1000; i++) {
+            if(strncmp(b[i], prefix, prefix_len) != 0) break;
+
+            int is_duplicate = 0;
+            for(int j = 0; j < suggestion_count; j++) {
+                if(strcmp(suggestions[j], b[i]) == 0) {
+                    is_duplicate = 1;
+                    break;
                 }
-                
-                if(!is_duplicate) {
-                    strcpy(suggestions[suggestion_count], word);
-                    file_counts[book]++;
-                    suggestion_count++;
-                }
+            }
+
+            if(!is_duplicate) {
+                strcpy(suggestions[suggestion_count], b[i]);
+                file_counts[book]++;
+                suggestion_count++;
             }
         }
     }
-    
+
     return suggestion_count;
 }
 
@@ -845,7 +847,7 @@ void add_to_history(char* word) {
     }
 }
 
-void case5_search_history() {
+void case6_search_history() {
     printf("\n");
     print_separator('=', 50);
     printf("    SEARCH HISTORY\n");
@@ -866,24 +868,97 @@ void case5_search_history() {
     print_separator('=', 50);
 }
 
+void case5_tfidf_analysis() {
+    char keyword[50];
+
+    printf("\n");
+    print_separator('=', 50);
+    printf("       TF-IDF ANALYSIS\n");
+    print_separator('=', 50);
+    printf(" Enter word to analyze: ");
+    scanf("%s", keyword);
+    add_to_history(keyword);
+
+    for(int i = 0; keyword[i]; i++)
+        keyword[i] = tolower(keyword[i]);
+
+    
+    int total_found = 0;
+    for(int book = 0; book < 4; book++) {
+        total_found += count_word_in_book(book, keyword);
+    }
+
+    if(total_found == 0) {
+        printf("\n Word '%s' not found in any book!\n", keyword);
+        printf(" Press Enter to continue...");
+        while(getchar() != '\n');
+        return;
+    }
+
+    printf("\n TF-IDF SCORES FOR: '%s'\n", keyword);
+    print_separator('=', 50);
+    printf(" %-15s | %-10s | %-10s | %-10s\n", "Book", "TF", "IDF", "TF-IDF");
+    print_separator('-', 50);
+
+    int doc_freq = 0;
+    for(int book = 0; book < 4; book++) {
+        if(count_word_in_book(book, keyword) > 0) doc_freq++;
+    }
+    double idf = log(4.0 / (1.0 + doc_freq));
+
+    double max_tfidf = -999;
+    int max_book = 0;
+
+    for(int book = 0; book < 4; book++) {
+        int wf = count_word_in_book(book, keyword);
+        double tf = (total_words[book] > 0) ? (double)wf / total_words[book] : 0;
+        double tfidf = tf * idf;
+
+        if(tfidf > max_tfidf) {
+            max_tfidf = tfidf;
+            max_book = book;
+        }
+
+        printf(" %-15s | %-10.6f | %-10.4f | %-10.6f\n",
+               book_names[book], tf, idf, tfidf);
+    }
+
+    print_separator('=', 50);
+
+    if(doc_freq == 4) {
+        printf(" Verdict: '%s' appears in all books; common word, low distinctiveness.\n", keyword);
+    } else if(max_tfidf < 0.0001) {
+        printf(" Verdict: '%s' has low importance; appears too frequently.\n", keyword);
+    } else if(max_tfidf < 0.001) {
+        printf(" Verdict: '%s' is moderately important, most relevant in %s.\n", keyword, book_names[max_book]);
+    } else {
+        printf(" Verdict: '%s' is highly distinctive and most significant in %s.\n", keyword, book_names[max_book]);
+    }
+
+    print_separator('=', 50);
+    printf(" Press Enter to continue...");
+    while(getchar() != '\n');
+}
+
 void display_menu() {
     printf("\n");
     print_separator('=', 50);
-    printf("       TEXT ANALYZER PRO       \n");
+    printf("       RAPIDLOOKUP       \n");
     print_separator('=', 50);
     printf("1. Exact Keyword Search\n");
     printf("2. Prefix Search (Interactive)\n");
     printf("3. Semantic Seacrh \n");
     printf("4. Word Frequency Count\n");
-    printf("5. Search History\n");
+    printf("5. TF-IDF Word Analysis\n");
+    printf("6. Search History\n");
     printf("0. Exit Program\n");
     print_separator('=', 50);
-    printf(" Enter your choice: ");
+    printf(" Enter your choice: "); 
 }
 
 int main() {
     load_synonyms();
-    printf(" TEXT ANALYZER PRO - PERFECT PROCESSOR \n");
+    printf(" RAPIDLOOKUP \n");
     print_separator('=', 60);
     prepare_input_files(); 
     printf("Starting book processing...\n");
@@ -902,6 +977,7 @@ int main() {
     }
 
     printf("\n ALL BOOKS SUCCESSFULLY PROCESSED!\n");
+    build_tfidf_vectors();
     printf(" Starting interactive menu system...\n\n");
     
     int choice;
@@ -932,19 +1008,23 @@ int main() {
                break;
             
             case 5:
-                case5_search_history();
+                case5_tfidf_analysis();
+                break;
+
+            case 6:
+                case6_search_history();
                 break;
             
             case 0:
                 printf("\n");
                 print_separator('=', 50);
-                printf(" Thank you for using Text Analyzer Pro!\n");
+                printf(" Thank you for using RapidLookup!\n");
                 printf(" Have a great day!\n");
                 print_separator('=', 50);
                 return 0;
             
             default:
-                printf("\n Invalid option! Please choose 0-5\n");
+                printf("\n Invalid option! Please choose 0-6\n");
         }
         
         while(getchar() != '\n');
@@ -963,3 +1043,4 @@ int main() {
     return 0;
 
 }
+
